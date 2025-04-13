@@ -172,17 +172,3 @@ If you find this work useful, please consider citing the relevant papers for MoE
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details 
 ```
 
----
-
-**Phase 6: Placeholder Data/Tokenizer Files**
-
-Create empty directories and potentially dummy files so the paths in the config exist.
-
-```bash
-mkdir -p data/multimodal data/tokenizers
-touch data/multimodal/train_data.jsonl
-touch data/multimodal/eval_data.jsonl
-touch data/tokenizers/bpe_tokenizer.json
-touch data/tokenizers/vit_config.json
-```
-
