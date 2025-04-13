@@ -1,0 +1,46 @@
+# Configuration for a larger ~13B conceptual Multimodal-MoE model
+# Inherits from base.yaml and overrides specific parameters
+
+# Use OmegaConf or similar tooling in train.py to handle inheritance,
+# but for clarity here, we list key changed parameters. Assume base is loaded first.
+
+model:
+  hidden_dim: 4096 # Increase hidden dimension
+  num_heads: 32
+
+  text_encoder:
+    num_layers: 32 # More layers
+    vocab_size: 64000 # Larger vocabulary
+    max_seq_len: 1024
+
+  image_encoder:
+    num_layers: 32
+    patch_size: 14 # Smaller patch size for higher resolution
+    img_size: 336 # Larger image size
+    use_lora: True
+    lora_rank: 16 # Potentially higher rank
+
+  fusion:
+    num_layers: 6
+
+  moe:
+    num_experts: 512 # More experts
+    top_k: 2 # Keep k=2 or maybe k=4
+    noise_epsilon: 0.01
+    capacity_factor: 1.2
+    aux_loss_factor: 0.01
+
+data:
+  batch_size: 32 # Likely need smaller batch size per GPU
+  num_workers: 8
+
+training:
+  learning_rate: 3e-5 # Often lower LR for larger models
+  warmup_steps: 1000
+  max_train_steps: 200000
+  gradient_accumulation_steps: 4 # Increase accumulation
+
+  # FSDP settings might need tuning for very large models
+  cpu_offload: True # More likely needed
+
+  output_dir: "outputs/multimodal_moe_large"

@@ -1,0 +1,74 @@
+# Configuration for the 1.3B parameter Multimodal-MoE model (base)
+# ~1.3B params assumes: hidden=2048, text_layers=24, image_layers=24, FFN_mult=4, num_experts=256
+# Calculation: Dense ~2*L*H*4*H = 8*L*H^2. MoE ~ Dense_NonExpert + Experts*ExpertSize
+# Base Dense (Roughly): 8 * 24 * 2048^2 = ~800M params per encoder. Fusion adds more.
+# MoE Experts: 256 * (2 * 2048 * (2048*4)) = ~8B params total expert capacity
+# Active Params: Dense_NonExpert + k * ExpertSize = Much smaller than Dense 1.3B equivalent
+
+model:
+  hidden_dim: 2048
+  num_heads: 16 # Standard for this dimension
+  dropout_rate: 0.1
+
+  text_encoder:
+    num_layers: 24
+    vocab_size: 32000 # Standard BPE size
+    max_seq_len: 512
+    alibi_enabled: True # Use ALiBi positional embeddings
+
+  image_encoder:
+    num_layers: 24
+    patch_size: 16
+    img_size: 224
+    use_lora: True # Enable LoRA adapters
+    lora_rank: 8   # Low rank for adapters
+
+  fusion:
+    num_layers: 4 # Number of cross-modal attention layers
+    use_moe_in_fusion: True # Use MoE in the fusion block FFNs
+
+  moe:
+    num_experts: 256
+    top_k: 2
+    gate_type: "noisy_topk" # 'noisy_topk' or 'switch' (though noisy specified)
+    noise_epsilon: 0.01 # Epsilon for NoisyTopkRouter
+    capacity_factor: 1.2 # As specified
+    aux_loss_factor: 0.01 # Weight for MoE auxiliary load balancing loss
+
+data:
+  text_tokenizer_path: "data/tokenizers/bpe_tokenizer.json"
+  image_tokenizer_config: "data/tokenizers/vit_config.json" # Config for patch embedding
+  train_dataset_path: "data/multimodal/train_data.jsonl" # Placeholder path
+  eval_dataset_path: "data/multimodal/eval_data.jsonl"   # Placeholder path
+  batch_size: 64 # Adjust based on GPU memory
+  num_workers: 4
+
+training:
+  optimizer: "AdamW" # OSS will wrap this
+  learning_rate: 6e-5 # Initial learning rate
+  weight_decay: 0.01
+  adam_beta1: 0.9
+  adam_beta2: 0.98
+  adam_epsilon: 1e-6
+  lr_scheduler_type: "cosine" # Cosine decay
+  warmup_steps: 500
+  max_train_steps: 100000 # Example total steps
+  gradient_accumulation_steps: 1
+  gradient_clipping: 1.0
+
+  # Fairscale / FSDP Settings
+  fsdp_enabled: True
+  mixed_precision: True # Use AMP (Automatic Mixed Precision)
+  reshard_after_forward: True
+  cpu_offload: False # Set to True if CPU memory needed for large models
+  gradient_checkpointing: True # Enable activation checkpointing
+
+  # Evaluation
+  eval_steps: 1000
+  eval_metrics: ["glue", "image_captioning_similarity"] # Placeholder metrics
+
+  # Logging & Saving
+  log_steps: 100
+  save_steps: 5000
+  output_dir: "outputs/multimodal_moe_base"
+  seed: 42

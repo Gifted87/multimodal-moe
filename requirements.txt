@@ -1,0 +1,21 @@
+# Core ML
+torch>=2.0.0 # Requires PyTorch 2.0+ for stable FSDP features
+torchvision
+transformers>=4.25.0 # For ViTModel, tokenizers, schedulers
+fairscale>=0.4.6 # For FSDP, OSS, MOELayer (check latest compatible version)
+
+# Config and Utilities
+omegaconf>=2.3.0
+pyyaml>=6.0
+tqdm>=4.60.0
+numpy>=1.20.0
+
+# Evaluation (Optional, for running metrics.py fully)
+# datasets>=2.10.0
+# evaluate>=0.4.0
+# scipy # For some metrics like Pearson in STS-B
+# sentencepiece # For BPE tokenizer
+# Pillow # For image loading
+
+# Add specific versions if compatibility issues arise
+# Example: torch==2.1.0 torchvision==0.16.0
